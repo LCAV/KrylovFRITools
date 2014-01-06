@@ -1,17 +1,13 @@
----
-title:  'Krylov FRI tools'
-author: Yann Barbotin (EPFL/IC/LCAV)
-date: 'January 2^nd^ 2014'
-tags: [FRI, Krylov, ESPRIT, matlab, python, Lanczos, OFDM]
-abstract: We present proof of concept code -- MATLAB and Python -- for  identification of the union of subspaces in FRI estimation problems. The key properties are a superlinear running-time and a linear memory consumption in term of the input size.
-css: ./fri.css
-bibliography: ./fri.bib
-
----
 
 # Preamble
 
-**Abstract** --- *We present proof of concept code -- MATLAB and Python -- for  identification of the union of subspaces in FRI estimation problems when the number of measurements greatly exceeds the dimension of the model^[This scenario happens frequently in wireless communications, *eg.* OFDM channels estimation from pilots.]. The key properties are a superlinear running-time and a linear memory consumption in term of the input size.*
+**Abstract** --- *We present proof of concept code -- MATLAB and Python -- for
+identification of the union of subspaces in FRI estimation problems when the
+number of measurements greatly exceeds the dimension of the model^[This
+scenario happens frequently in wireless communications, *eg.* OFDM channels
+estimation from pilots.]. The key properties are a superlinear running-time and
+a linear memory consumption in term of the input size.*
+
 
 ## Formulation of the problem
 
@@ -27,8 +23,8 @@ where
 - $c_{k,p}$ are unknown complex-valued scalars,
 - $E$ is a sequence of white gaussian noise.
 
-Therefore, the input is of size $P(2M+1)$. The problem we consider is the fast and accurate estimation of the unknown phases $\omega_k$ from the measurements.
-
+Therefore, the input is of size $P(2M+1)$. The problem we consider is the fast
+and accurate estimation of the unknown phases $\omega_k$ from the measurements.
 
 
 ## Theoretical guarantees of the proposed solution
@@ -41,17 +37,28 @@ The properties of our solution can be summarized and compared with other methods
 |Full SVD (serial)|  $PM^{3}$ | $PM^{2}$ | $PM^{3}$ | 1 SVD multipurpose processor |
 |Full SVD (systolic array) | $PM^{3}$ | $PM^{2}$ | $M(\log M +P)$ | $M^{2}\times\:$ 2-by-2  SVD pu. |
 
-: The full SVD is done with Jacobi rotations and can be massively parallelized using the systolic array method [@Brent1985]. Parallelism greatly reduces the latency of the system, but since it does not reduce the number of computations it comes at the cost of using multiple processing units. The numbers are to be understood in "$\mathcal{O}$" notation.
+: The full SVD is done with Jacobi rotations and can be massively parallelized
+using the systolic array method [@Brent1985]. Parallelism greatly reduces the
+latency of the system, but since it does not reduce the number of computations
+it comes at the cost of using multiple processing units. The numbers are to be
+understood in "$\mathcal{O}$" notation.
 
 
-The storage improvement comes from the fact that *the data matrix used within the ESPRIT algorithm is never explicitely built*. 
-The computational improvement is guaranteed by [@Barbotin2013, Theorem 2.3], where it is proven that the sine squared of the principal angle between the signal space^[The signal space is the union of subspaces referred above.] of dimension $K$ and its approximation found in a Krylov subspace of dimension $L>K$ evolves as^[For a small angle, the first order Taylor approximation of the sine function indicates that the principal angle is of magnitude $\mathcal O\left(\left(\frac{\log
-      M}{\sqrt{M}}\right)^{(L-K)}\right).$ ]
+The storage improvement comes from the fact that *the data matrix used within
+the ESPRIT algorithm is never explicitely built*.  The computational
+improvement is guaranteed by [@Barbotin2013, Theorem 2.3], where it is proven
+that the sine squared of the principal angle between the signal space^[The
+signal space is the union of subspaces referred above.] of dimension $K$ and
+its approximation found in a Krylov subspace of dimension $L>K$ evolves as^[For
+a small angle, the first order Taylor approximation of the sine function
+indicates that the principal angle is of magnitude $\mathcal O\left(\left(\frac{\log M}{\sqrt{M}}\right)^{(L-K)}\right).$ ]
 
-$$\mathcal O\left(\left(\frac{\log
-      M}{\sqrt{M}}\right)^{2(L-K)}\right).$$
+$$\mathcal O\left(\left(\frac{\log M}{\sqrt{M}}\right)^{2(L-K)}\right).$$
 
-It indicates that the approximation error decays as a power degree corresponding to the number of additional dimensions compared to the signal subspace, so that a low enough numerical error is met for $L\sim\mathcal O(K)$ and $M$ large enough.
+It indicates that the approximation error decays as a power degree
+corresponding to the number of additional dimensions compared to the signal
+subspace, so that a low enough numerical error is met for $L\sim\mathcal O(K)$
+and $M$ large enough.
 
 # Code snippets
 
@@ -70,8 +77,10 @@ First, we provide a simple implementation of the ESPRIT algorithm^[See [@Roy1989
 1. The "Full SVD (serial)" method.
 2. The "Krylov" method.
 
-~~~~{#ESPRIT .matlab .numberLines}
+  
+```matlab
 function z=ESPRIT(Y,K,krylov,TLS)
+
 % INPUT
 %	Y :				A Px(2*M+1) array of measurements (see measurement model above)
 %	K :				The dimension of the signal space
@@ -80,31 +89,31 @@ function z=ESPRIT(Y,K,krylov,TLS)
 % OUTPUT
 %	z :				A vector containing the phasors exp(D*omega)
 
-	if krylov
-	    [V D]=sigspace_toeplitz_Krylov(Y,K);
-	else
-	    [V D]=sigspace_toeplitz(Y,K);
-	end
+  if krylov
+      [V D]=sigspace_toeplitz_Krylov(Y,K);
+  else
+      [V D]=sigspace_toeplitz(Y,K);
+  end
 
-	if TLS
-	    %ESPRIT-TLS
-	    [~,~,C]=svd([V(1:(end-1),1:K) V(2:end,1:K)],0);
-	    Phi=eig(-C(1:K,(K+1):(2*K))/C((K+1):(2*K),(K+1):(2*K)));%literally: eig(Psi)
-	else
-	    %ESPRIT-LS
-	    Phi=eig(V(1:(end-1),1:K)\V(2:end,1:K));
-	end
-	z=Phi(:);
+  if TLS
+      %ESPRIT-TLS
+      [~,~,C]=svd([V(1:(end-1),1:K) V(2:end,1:K)],0);
+      Phi=eig(-C(1:K,(K+1):(2*K))/C((K+1):(2*K),(K+1):(2*K)));%literally: eig(Psi)
+  else
+      %ESPRIT-LS
+      Phi=eig(V(1:(end-1),1:K)\V(2:end,1:K));
+  end
+  z=Phi(:);
 end
-
-~~~~
-
+```
 
 The two functions ``sigspace_toeplitz_Krylov`` and ``sigspace_toeplitz`` are yet to be defined.
 
-First the Krylov based method^[Some parameters like the tolerance, the number of lanczos vectors, ... are usually fixed and therefore hard-coded -- see the structure ``opts``. Change them to suit your needs.]
+First the Krylov based method^[Some parameters like the tolerance, the number
+of lanczos vectors, ... are usually fixed and therefore hard-coded -- see the
+structure ``opts``. Change them to suit your needs.]
 
-~~~~{#krylov .matlab .numberLines startFrom="27"}
+```matlab
 function [V D termsig]=sigspace_toeplitz_Krylov(Y,K,v0)
 % INPUT
 %	Y :			A Px(2*M+1) array of measurements (see measurement model above)
@@ -148,14 +157,16 @@ function [V D termsig]=sigspace_toeplitz_Krylov(Y,K,v0)
     [V D termsig]=eigs(A,M+1,K,'lm',opts);
     D=sqrt(diag(D));
 end
+```
 
-~~~~
-
-During the Krylov subspace projection the block-Toeplitz data matrix $\mathbf T$ is only accessed through matrix vector multiplications, therefore it does not have to be built explicitely, rather we coded the function ``mmult`` which uses the FFT to perform the matrix-vector multiplication.
+During the Krylov subspace projection the block-Toeplitz data matrix $\mathbf
+T$ is only accessed through matrix vector multiplications, therefore it does
+not have to be built explicitely, rather we coded the function ``mmult`` which
+uses the FFT to perform the matrix-vector multiplication.
 
 As a comparison, the direct implementation  ``sigspace_toeplitz`` would be:
 
-~~~~{#direct .matlab .numberLines startFrom="71"}
+```matlab
 function [V D]=sigspace_toeplitz(Y,K)
 % INPUT
 %	Y :			A Px(2*M+1) array of measurements (see measurement model above)
@@ -182,13 +193,13 @@ function T=blockToeplitz(Y,L)
     end
 end
 
-~~~~
+```
 
 ## Python code
 
 Below is a simple Python class for a single input^[Extension to multiple inputs is relatively easy, follow the MATLAB code.] ($P=1$)
 
-~~~~{#direct .python .numberLines}
+```python
 # This class stores a Toeplitz matrix implicitly (generator) and provide fast methods to evaluate its column-space
 # and the roots of its generator
 import numpy as np
@@ -227,7 +238,8 @@ class toeplitzgen:
 		V0=eigs(self.linop,K,tol=self.TOL)[1]
 		C=svd(np.concatenate((V0[0:-1,:],V0[1:,:]),1),False)[2].T
 		return -
-~~~~ 
+```
+
 For more details, see the [documentation on the ``LinearOperator`` object](http://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.LinearOperator.html#scipy.sparse.linalg.LinearOperator).
 
 As a quick check, the fast implementation quickly outperforms the direct implementation as $M$ grows :
