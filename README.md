@@ -3,9 +3,9 @@
 
 **Abstract** --- *We present proof of concept code -- MATLAB and Python -- for
 identification of the union of subspaces in FRI estimation problems when the
-number of measurements greatly exceeds the dimension of the model^[This
+number of measurements greatly exceeds the dimension of the model. This
 scenario happens frequently in wireless communications, *eg.* OFDM channels
-estimation from pilots.]. The key properties are a superlinear running-time and
+estimation from pilots. The key properties are a superlinear running-time and
 a linear memory consumption in term of the input size.*
 
 
@@ -47,13 +47,14 @@ understood in "$\mathcal{O}$" notation.
 The storage improvement comes from the fact that *the data matrix used within
 the ESPRIT algorithm is never explicitely built*.  The computational
 improvement is guaranteed by [@Barbotin2013, Theorem 2.3], where it is proven
-that the sine squared of the principal angle between the signal space^[The
-signal space is the union of subspaces referred above.] of dimension $K$ and
-its approximation found in a Krylov subspace of dimension $L>K$ evolves as^[For
-a small angle, the first order Taylor approximation of the sine function
-indicates that the principal angle is of magnitude $\mathcal O\left(\left(\frac{\log M}{\sqrt{M}}\right)^{(L-K)}\right).$ ]
+that the sine squared of the principal angle between the signal space -- The
+signal space is the union of subspaces referred above -- of dimension $K$ and
+its approximation found in a Krylov subspace of dimension $L>K$ evolves as
 
 $$\mathcal O\left(\left(\frac{\log M}{\sqrt{M}}\right)^{2(L-K)}\right).$$
+
+(For a small angle, the first order Taylor approximation of the sine function
+indicates that the principal angle is of magnitude $\mathcal O\left(\left(\frac{\log M}{\sqrt{M}}\right)^{(L-K)}\right).$)
 
 It indicates that the approximation error decays as a power degree
 corresponding to the number of additional dimensions compared to the signal
@@ -247,3 +248,18 @@ As a quick check, the fast implementation quickly outperforms the direct impleme
 ![Median runtime of ESPRIT-TLS ($K = 5$, $P = 1$) on a single channel for a given number of pilots $2M + 1$. The test is coded in Python and uses the LAPACK library to compute SVDs and the ARPACK library for the Lanczos iterations. The fast matrix-vector multiplication uses the FFTW3 library.](./benchmark.png "benchmark")
 
 # Bibliography
+
+Barbotin, Yann. 2013. “Parametric Estimation of Sparse Channels: Theory and 
+Applications.” PhD thesis, EPFL – School of Information; Communications.
+
+Brent, RP, FT Luk, and C. Van Loan. 1985. “Computation of the Singular Value
+Decomposition Using Mesh-connected Processors.” *Journal of VLSI and Computer
+Systems* 1 (3): 242–270.
+
+Pan, Victor. 2001. *Structured Matrices and Polynomials: Unified Superfast
+Algorithms*. Springer Verlag.
+
+Roy, R., and T. Kailath. 1989. “ESPRIT-Estimation of Signal Parameters Via 
+Rotational Invariance Techniques.” *IEEE Trans. Acoust., Speech, Signal
+Process.* 37: 984–995.
+
