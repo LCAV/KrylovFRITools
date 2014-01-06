@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="KrylovFRITools : We present proof of concept code - MATLAB and Python - for identification of the union of subspaces in FRI estimation problems when the number of measurements greatly exceeds the dimension of the model." />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>KrylovFRITools</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/LCAV/KrylovFRITools">View on GitHub</a>
+
+          <h1 id="project_title">KrylovFRITools</h1>
+          <h2 id="project_tagline">We present proof of concept code - MATLAB and Python - for identification of the union of subspaces in FRI estimation problems when the number of measurements greatly exceeds the dimension of the model.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/LCAV/KrylovFRITools/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/LCAV/KrylovFRITools/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="preamble" class="anchor" href="#preamble"><span class="octicon octicon-link"></span></a>Preamble</h1>
+
+<p><strong>Abstract</strong> --- <em>We present proof of concept code -- MATLAB and Python -- for
+identification of the union of subspaces in FRI estimation problems when the
+number of measurements greatly exceeds the dimension of the model. This
+scenario happens frequently in wireless communications, *eg.</em> OFDM channels
+estimation from pilots. The key properties are a superlinear running-time and
+a linear memory consumption in term of the input size.*</p>
+
+<h2>
+<a name="formulation-of-the-problem" class="anchor" href="#formulation-of-the-problem"><span class="octicon octicon-link"></span></a>Formulation of the problem</h2>
+
+<p>We consider a set of  $P$ sequences of measurements</p>
+
+<p>$$Y_p[m] = \sum_{k=1}^K c_{k,p}e^{-jD\omega_k m}+E[m]\ ,\quad\ |m|\leq M, \quad p=1,\ \dots, \ P,$$</p>
+
+<p>where </p>
+
+<ul>
+<li>$K$ is the number of subspaces in the union of subspaces,</li>
+<li>$D$ is an integer decimation factor ($D= 1,\ 2,\ 3,\ \dots$),</li>
+<li>$\omega_k$ are unknown phases within $[-\pi/D ,\  \pi/D[$,</li>
+<li>$c_{k,p}$ are unknown complex-valued scalars,</li>
+<li>$E$ is a sequence of white gaussian noise.</li>
+</ul><p>Therefore, the input is of size $P(2M+1)$. The problem we consider is the fast
+and accurate estimation of the unknown phases $\omega_k$ from the measurements.</p>
+
+<h2>
+<a name="theoretical-guarantees-of-the-proposed-solution" class="anchor" href="#theoretical-guarantees-of-the-proposed-solution"><span class="octicon octicon-link"></span></a>Theoretical guarantees of the proposed solution</h2>
+
+<p>The properties of our solution can be summarized and compared with other methods as :</p>
+
+<table>
+<thead><tr>
+<th>Algorithm</th>
+<th>Main computation</th>
+<th>Storage</th>
+<th>Latency</th>
+<th>Processing units (pu.)</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Krylov</td>
+<td>$KPM\log M$</td>
+<td>$KM$</td>
+<td>$KM$</td>
+<td>$P:\times$ FFT engines ($2(M+1)$ points FFT)</td>
+</tr>
+<tr>
+<td>Full SVD (serial)</td>
+<td>$PM^{3}$</td>
+<td>$PM^{2}$</td>
+<td>$PM^{3}$</td>
+<td>1 SVD multipurpose processor</td>
+</tr>
+<tr>
+<td>Full SVD (systolic array)</td>
+<td>$PM^{3}$</td>
+<td>$PM^{2}$</td>
+<td>$M(\log M +P)$</td>
+<td>$M^{2}\times:$ 2-by-2  SVD pu.</td>
+</tr>
+</tbody>
+</table><p>: The full SVD is done with Jacobi rotations and can be massively parallelized
+using the systolic array method [@Brent1985]. Parallelism greatly reduces the
+latency of the system, but since it does not reduce the number of computations
+it comes at the cost of using multiple processing units. The numbers are to be
+understood in "$\mathcal{O}$" notation.</p>
+
+<p>The storage improvement comes from the fact that <em>the data matrix used within
+the ESPRIT algorithm is never explicitely built</em>.  The computational
+improvement is guaranteed by [@Barbotin2013, Theorem 2.3], where it is proven
+that the sine squared of the principal angle between the signal space -- The
+signal space is the union of subspaces referred above -- of dimension $K$ and
+its approximation found in a Krylov subspace of dimension $L&gt;K$ evolves as</p>
+
+<p>$$\mathcal O\left(\left(\frac{\log M}{\sqrt{M}}\right)^{2(L-K)}\right).$$</p>
+
+<p>(For a small angle, the first order Taylor approximation of the sine function
+indicates that the principal angle is of magnitude $\mathcal O\left(\left(\frac{\log M}{\sqrt{M}}\right)^{(L-K)}\right).$)</p>
+
+<p>It indicates that the approximation error decays as a power degree
+corresponding to the number of additional dimensions compared to the signal
+subspace, so that a low enough numerical error is met for $L\sim\mathcal O(K)$
+and $M$ large enough.</p>
+
+<h1>
+<a name="code-snippets" class="anchor" href="#code-snippets"><span class="octicon octicon-link"></span></a>Code snippets</h1>
+
+<h2>
+<a name="foreword" class="anchor" href="#foreword"><span class="octicon octicon-link"></span></a>Foreword</h2>
+
+<p>Keep in mind that:</p>
+
+<ul>
+<li>We provide a MATLAB and a Python code The Python code implements only the single input case, <em>ie.</em> $P=1$.</li>
+<li>Since the measurements are indexed by $|m|\leq M$ it assumes that they are in an odd number. This is not a requirement <em>per se</em>, and the code can easily be tweaked to deal with it. </li>
+<li>Both codes output  the phasor $z_k=e^{jD\omega_k}$. The original phase is retrieved without ambiguity by a simple division of the phase by $D$ assuming it belongs to $[-\pi/D ,\  \pi/D[$.</li>
+<li>This is a basic code, it does not include the estimation of the signal space dimension nor the estimation of the coefficients $c_{k,p}$ -- the later is quite straightforward and can be done efficiently using rational interpolation [@Pan2001].</li>
+</ul><h2>
+<a name="matlab-code" class="anchor" href="#matlab-code"><span class="octicon octicon-link"></span></a>MATLAB code</h2>
+
+<p>First, we provide a simple implementation of the ESPRIT algorithm using a <em>least-squares</em> (LS) or <em>total least-squares</em> (TLS) error metric and using either (see the Table above) : </p>
+
+<ol>
+<li>The "Full SVD (serial)" method.</li>
+<li>The "Krylov" method.</li>
+</ol><p>See [<a href="https://github.com/Roy1989" class="user-mention">@Roy1989</a>] for the original ESPRIT algorithm, and [@Barbotin2013, Chapter 2] for more details on this particular usage.</p>
+
+<div class="highlight highlight-matlab"><pre><span class="k">function</span><span class="w"> </span>z<span class="p">=</span><span class="nf">ESPRIT</span><span class="p">(</span>Y,K,krylov,TLS<span class="p">)</span><span class="w"></span>
+
+<span class="c">% INPUT</span>
+<span class="c">%   Y :             A Px(2*M+1) array of measurements (see measurement model above)</span>
+<span class="c">%   K :             The dimension of the signal space</span>
+<span class="c">%   krylov, TLS :   Boolean flags enabling/disabling the use of the Krylov method and TLS</span>
+<span class="c">%</span>
+<span class="c">% OUTPUT</span>
+<span class="c">%   z :             A vector containing the phasors exp(D*omega)</span>
+
+  <span class="k">if</span> <span class="n">krylov</span>
+      <span class="p">[</span><span class="n">V</span> <span class="n">D</span><span class="p">]=</span><span class="n">sigspace_toeplitz_Krylov</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span><span class="n">K</span><span class="p">);</span>
+  <span class="k">else</span>
+      <span class="p">[</span><span class="n">V</span> <span class="n">D</span><span class="p">]=</span><span class="n">sigspace_toeplitz</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span><span class="n">K</span><span class="p">);</span>
+  <span class="k">end</span>
+
+  <span class="k">if</span> <span class="n">TLS</span>
+      <span class="c">%ESPRIT-TLS</span>
+      <span class="p">[</span><span class="o">~</span><span class="p">,</span><span class="o">~</span><span class="p">,</span><span class="n">C</span><span class="p">]=</span><span class="n">svd</span><span class="p">([</span><span class="n">V</span><span class="p">(</span><span class="mi">1</span><span class="p">:(</span><span class="k">end</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="mi">1</span><span class="p">:</span><span class="n">K</span><span class="p">)</span> <span class="n">V</span><span class="p">(</span><span class="mi">2</span><span class="p">:</span><span class="k">end</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">K</span><span class="p">)],</span><span class="mi">0</span><span class="p">);</span>
+      <span class="n">Phi</span><span class="p">=</span><span class="n">eig</span><span class="p">(</span><span class="o">-</span><span class="n">C</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">K</span><span class="p">,(</span><span class="n">K</span><span class="o">+</span><span class="mi">1</span><span class="p">):(</span><span class="mi">2</span><span class="o">*</span><span class="n">K</span><span class="p">))</span><span class="o">/</span><span class="n">C</span><span class="p">((</span><span class="n">K</span><span class="o">+</span><span class="mi">1</span><span class="p">):(</span><span class="mi">2</span><span class="o">*</span><span class="n">K</span><span class="p">),(</span><span class="n">K</span><span class="o">+</span><span class="mi">1</span><span class="p">):(</span><span class="mi">2</span><span class="o">*</span><span class="n">K</span><span class="p">)));</span><span class="c">%literally: eig(Psi)</span>
+  <span class="k">else</span>
+      <span class="c">%ESPRIT-LS</span>
+      <span class="n">Phi</span><span class="p">=</span><span class="n">eig</span><span class="p">(</span><span class="n">V</span><span class="p">(</span><span class="mi">1</span><span class="p">:(</span><span class="k">end</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="mi">1</span><span class="p">:</span><span class="n">K</span><span class="p">)</span><span class="o">\</span><span class="n">V</span><span class="p">(</span><span class="mi">2</span><span class="p">:</span><span class="k">end</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">K</span><span class="p">));</span>
+  <span class="k">end</span>
+  <span class="n">z</span><span class="p">=</span><span class="n">Phi</span><span class="p">(:);</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>The two functions <code>sigspace_toeplitz_Krylov</code> and <code>sigspace_toeplitz</code> are yet to be defined.</p>
+
+<p>First the Krylov based method. Some parameters like the tolerance, the number
+of lanczos vectors, ... are usually fixed and therefore hard-coded -- see the
+structure <code>opts</code>. Change them to suit your needs.</p>
+
+<div class="highlight highlight-matlab"><pre><span class="k">function</span><span class="w"> </span>[V D termsig]<span class="p">=</span><span class="nf">sigspace_toeplitz_Krylov</span><span class="p">(</span>Y,K,v0<span class="p">)</span><span class="w"></span>
+<span class="c">% INPUT</span>
+<span class="c">%   Y :         A Px(2*M+1) array of measurements (see measurement model above)</span>
+<span class="c">%   K :         The dimension of the signal space</span>
+<span class="c">%   v0 :        (optional) The initial vector for Lanczos algorithm</span>
+<span class="c">%</span>
+<span class="c">% OUTPUT</span>
+<span class="c">%   V :         An orthonormal basis of the signal space</span>
+<span class="c">%   D :         The modulus of the associated singular values</span>
+<span class="c">%   termsig :   The termination signal of the Krylov decomposition (see the MATLAB documentation of EIGS)</span>
+
+    <span class="p">[</span><span class="n">P</span> <span class="n">N</span><span class="p">]=</span><span class="nb">size</span><span class="p">(</span><span class="n">Y</span><span class="p">);</span>
+    <span class="n">M</span><span class="p">=</span><span class="nb">floor</span><span class="p">(</span><span class="n">N</span><span class="o">/</span><span class="mi">2</span><span class="p">);</span>
+    <span class="n">tc</span><span class="p">=</span><span class="n">Y</span><span class="p">(:,(</span><span class="n">N</span><span class="o">-</span><span class="n">M</span><span class="p">):</span><span class="k">end</span><span class="p">).</span><span class="s">'; %dim = MxP</span>
+<span class="s">    tl=Y(:,(N-M):-1:1).'</span><span class="p">;</span>  <span class="c">%dim = MxP</span>
+    <span class="n">sn</span><span class="p">=</span><span class="nb">mod</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="mi">2</span><span class="p">);</span>
+
+    <span class="c">%% FFT implementation of T'*T*f (T is  stack-toeplitz)</span>
+    <span class="c">%tc contains the leading column of each toeplitz block (P columns)</span>
+    <span class="c">%tr contains the leading row of each toeplitz block (P rows)</span>
+    <span class="n">fc</span><span class="p">=</span><span class="n">fft</span><span class="p">([</span><span class="n">tc</span><span class="p">;</span><span class="nb">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">P</span><span class="p">);</span><span class="n">tl</span><span class="p">(</span><span class="k">end</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="mi">2</span><span class="p">,:)]);</span>
+    <span class="n">fcconj</span><span class="p">=</span><span class="n">fft</span><span class="p">([</span><span class="nb">conj</span><span class="p">(</span><span class="n">tl</span><span class="p">);</span><span class="nb">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">P</span><span class="p">);</span><span class="nb">conj</span><span class="p">(</span><span class="n">tc</span><span class="p">(</span><span class="k">end</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="mi">2</span><span class="p">,:))]);</span>
+<span class="k">    function</span><span class="w"> </span>g<span class="p">=</span><span class="nf">mmult</span><span class="p">(</span>f<span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">g</span><span class="p">=[</span><span class="n">f</span><span class="p">;</span> <span class="nb">zeros</span><span class="p">(</span><span class="n">M</span><span class="o">+</span><span class="n">sn</span><span class="p">,</span><span class="mi">1</span><span class="p">)];</span>
+        <span class="n">g</span><span class="p">=</span><span class="n">ifft</span><span class="p">(</span><span class="nb">bsxfun</span><span class="p">(@</span><span class="n">times</span><span class="p">,</span><span class="n">fc</span><span class="p">,</span><span class="n">fft</span><span class="p">(</span><span class="n">g</span><span class="p">)));</span>
+        <span class="n">g</span><span class="p">((</span><span class="n">M</span><span class="o">+</span><span class="mi">2</span><span class="p">):</span><span class="k">end</span><span class="p">,:,:)=</span><span class="mi">0</span><span class="p">;</span>
+        <span class="n">g</span><span class="p">=</span><span class="n">ifft</span><span class="p">(</span><span class="nb">bsxfun</span><span class="p">(@</span><span class="n">times</span><span class="p">,</span><span class="n">fcconj</span><span class="p">,</span><span class="n">fft</span><span class="p">(</span><span class="n">g</span><span class="p">)));</span>
+        <span class="n">g</span><span class="p">=</span><span class="n">sum</span><span class="p">(</span><span class="n">g</span><span class="p">(</span><span class="mi">1</span><span class="p">:(</span><span class="n">M</span><span class="o">+</span><span class="mi">1</span><span class="p">),:),</span><span class="mi">2</span><span class="p">);</span>
+    <span class="k">end</span>
+
+    <span class="c">%% Arguments for eigs()</span>
+    <span class="n">A</span><span class="p">=@(</span><span class="n">f</span><span class="p">)</span><span class="n">mmult</span><span class="p">(</span><span class="n">f</span><span class="p">);</span> <span class="c">%pointer to the mat-vec multiply</span>
+    <span class="k">if</span> <span class="n">nargin</span><span class="o">&gt;</span><span class="mi">2</span>
+        <span class="n">opts</span><span class="p">.</span><span class="n">v0</span><span class="p">=</span><span class="n">v0</span><span class="p">;</span> <span class="c">%initial vector of lanczos, set for tracking</span>
+    <span class="k">end</span>
+    <span class="n">opts</span><span class="p">.</span><span class="n">tol</span><span class="p">=</span><span class="mf">1e-6</span><span class="p">;</span>  <span class="c">%play with it</span>
+    <span class="n">opts</span><span class="p">.</span><span class="n">issym</span><span class="p">=</span><span class="mi">1</span><span class="p">;</span>   <span class="c">%We have an hermitian square matrix</span>
+    <span class="n">opts</span><span class="p">.</span><span class="nb">isreal</span><span class="p">=</span><span class="mi">0</span><span class="p">;</span>  <span class="c">%may apply if Y is real</span>
+    <span class="n">opts</span><span class="p">.</span><span class="n">p</span><span class="p">=</span><span class="n">max</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">K</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">);</span>     <span class="c">%# of lanczos vectors</span>
+
+    <span class="p">[</span><span class="n">V</span> <span class="n">D</span> <span class="n">termsig</span><span class="p">]=</span><span class="n">eigs</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">M</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">K</span><span class="p">,</span><span class="s">'lm'</span><span class="p">,</span><span class="n">opts</span><span class="p">);</span>
+    <span class="n">D</span><span class="p">=</span><span class="nb">sqrt</span><span class="p">(</span><span class="nb">diag</span><span class="p">(</span><span class="n">D</span><span class="p">));</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>During the Krylov subspace projection the block-Toeplitz data matrix $\mathbf
+T$ is only accessed through matrix vector multiplications, therefore it does
+not have to be built explicitely, rather we coded the function <code>mmult</code> which
+uses the FFT to perform the matrix-vector multiplication.</p>
+
+<p>As a comparison, the direct implementation  <code>sigspace_toeplitz</code> would be:</p>
+
+<div class="highlight highlight-matlab"><pre><span class="k">function</span><span class="w"> </span>[V D]<span class="p">=</span><span class="nf">sigspace_toeplitz</span><span class="p">(</span>Y,K<span class="p">)</span><span class="w"></span>
+<span class="c">% INPUT</span>
+<span class="c">%   Y :         A Px(2*M+1) array of measurements (see measurement model above)</span>
+<span class="c">%   K :         The dimension of the signal space</span>
+<span class="c">%</span>
+<span class="c">% OUTPUT</span>
+<span class="c">%   V :         An orthonormal basis of the signal space</span>
+<span class="c">%   D :         The modulus of the associated singular values</span>
+    <span class="n">N</span><span class="p">=</span><span class="nb">size</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span><span class="mi">2</span><span class="p">);</span>
+    <span class="n">L</span><span class="p">=</span><span class="nb">floor</span><span class="p">(</span><span class="n">N</span><span class="o">/</span><span class="mi">2</span><span class="p">);</span>
+    <span class="n">T</span><span class="p">=</span><span class="n">blockToeplitz</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span><span class="n">L</span><span class="p">);</span>
+    <span class="p">[</span><span class="o">~</span><span class="p">,</span><span class="n">D</span><span class="p">,</span><span class="n">V</span><span class="p">]=</span><span class="n">svd</span><span class="p">(</span><span class="n">T</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+    <span class="n">D</span><span class="p">=</span><span class="nb">diag</span><span class="p">(</span><span class="n">D</span><span class="p">);</span>
+    <span class="n">V</span><span class="p">=</span><span class="n">V</span><span class="p">(:,</span><span class="mi">1</span><span class="p">:</span><span class="n">K</span><span class="p">);</span>
+    <span class="n">D</span><span class="p">=</span><span class="n">D</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">K</span><span class="p">);</span>
+<span class="k">end</span>
+
+<span class="k">function</span><span class="w"> </span>T<span class="p">=</span><span class="nf">blockToeplitz</span><span class="p">(</span>Y,L<span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">[</span><span class="n">P</span> <span class="n">N</span><span class="p">]=</span><span class="nb">size</span><span class="p">(</span><span class="n">Y</span><span class="p">);</span>
+    <span class="n">M</span><span class="p">=</span><span class="n">N</span><span class="o">-</span><span class="n">L</span><span class="o">+</span><span class="mi">1</span><span class="p">;</span>
+    <span class="n">T</span><span class="p">=</span><span class="nb">zeros</span><span class="p">(</span><span class="n">P</span><span class="o">*</span><span class="n">M</span><span class="p">,</span><span class="n">L</span><span class="p">);</span>
+    <span class="k">for</span> <span class="n">b</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="n">P</span>
+        <span class="n">T</span><span class="p">(</span><span class="n">M</span><span class="o">*</span><span class="p">(</span><span class="n">b</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">M</span><span class="p">),:)=</span><span class="nb">toeplitz</span><span class="p">(</span><span class="n">Y</span><span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="n">L</span><span class="p">:</span><span class="k">end</span><span class="p">),</span><span class="n">Y</span><span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="n">L</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">));</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+
+</pre></div>
+
+<h2>
+<a name="python-code" class="anchor" href="#python-code"><span class="octicon octicon-link"></span></a>Python code</h2>
+
+<p>Below is a simple Python class for a single input ($P=1$). Extension to multiple inputs is relatively easy, follow the MATLAB code.</p>
+
+<div class="highlight highlight-python"><pre><span class="c"># This class stores a Toeplitz matrix implicitly (generator) and provide fast methods to evaluate its column-space</span>
+<span class="c"># and the roots of its generator</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.sparse.linalg</span> <span class="kn">import</span> <span class="n">LinearOperator</span><span class="p">,</span> <span class="n">eigs</span>
+<span class="kn">import</span> <span class="nn">scipy.fftpack</span> <span class="kn">as</span> <span class="nn">fftp</span>
+<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">svd</span><span class="p">,</span> <span class="n">eig</span><span class="p">,</span> <span class="n">lstsq</span>
+<span class="k">class</span> <span class="nc">toeplitzgen</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span><span class="n">row</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">col</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">row</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">row</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">row</span><span class="o">.</span><span class="n">size</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="o">==</span><span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="o">.</span><span class="n">size</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fc</span><span class="o">=</span><span class="n">fftp</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">row</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fcconj</span><span class="o">=</span><span class="n">fftp</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">row</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]))))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linop</span><span class="o">=</span><span class="n">LinearOperator</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">),</span><span class="n">matvec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vmult</span><span class="p">,</span><span class="n">rmatvec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vmult</span><span class="p">,</span><span class="n">matmat</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mmult</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">TOL</span><span class="o">=</span><span class="mf">1e-10</span>
+
+    <span class="k">def</span> <span class="nf">vmult</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">g</span><span class="o">=</span><span class="n">fftp</span><span class="o">.</span><span class="n">ifft</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fc</span><span class="o">*</span><span class="n">fftp</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">)),</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">))))))</span>
+        <span class="n">g</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">:]</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+        <span class="k">return</span> <span class="n">fftp</span><span class="o">.</span><span class="n">ifft</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fcconj</span><span class="o">*</span><span class="n">fftp</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">g</span><span class="p">))[</span><span class="mi">0</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">mmult</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">A</span><span class="p">):</span>
+        <span class="n">P</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">G</span><span class="o">=</span><span class="n">fftp</span><span class="o">.</span><span class="n">ifft</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fc</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span><span class="o">*</span><span class="n">fftp</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">A</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">,</span><span class="n">P</span><span class="p">)))),</span><span class="bp">None</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span><span class="bp">None</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">G</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">:][:]</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+        <span class="k">return</span> <span class="n">fftp</span><span class="o">.</span><span class="n">ifft</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fcconj</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span><span class="o">*</span><span class="n">fftp</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="bp">None</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span><span class="bp">None</span><span class="p">,</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">,:]</span>
+
+    <span class="k">def</span> <span class="nf">colSpace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">K</span><span class="p">):</span>
+        <span class="n">evl</span><span class="p">,</span> <span class="n">evct</span> <span class="o">=</span> <span class="n">eigs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linop</span><span class="p">,</span><span class="n">K</span><span class="p">,</span><span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">TOL</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">evct</span>
+
+    <span class="k">def</span> <span class="nf">ESPRIT_TLS</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">K</span><span class="p">):</span>
+        <span class="n">V0</span><span class="o">=</span><span class="n">eigs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linop</span><span class="p">,</span><span class="n">K</span><span class="p">,</span><span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">TOL</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">C</span><span class="o">=</span><span class="n">svd</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">V0</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,:],</span><span class="n">V0</span><span class="p">[</span><span class="mi">1</span><span class="p">:,:]),</span><span class="mi">1</span><span class="p">),</span><span class="bp">False</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">return</span> <span class="o">-</span>
+</pre></div>
+
+<p>For more details, see the <a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.LinearOperator.html#scipy.sparse.linalg.LinearOperator">documentation on the <code>LinearOperator</code> object</a>.</p>
+
+<p>As a quick check, the fast implementation quickly outperforms the direct implementation as $M$ grows :</p>
+
+<p><img src="./benchmark.png" alt="Median runtime of ESPRIT-TLS ($K = 5$, $P = 1$) on a single channel for a given number of pilots $2M + 1$. The test is coded in Python and uses the LAPACK library to compute SVDs and the ARPACK library for the Lanczos iterations. The fast matrix-vector multiplication uses the FFTW3 library." title="benchmark"></p>
+
+<h1>
+<a name="bibliography" class="anchor" href="#bibliography"><span class="octicon octicon-link"></span></a>Bibliography</h1>
+
+<p>Barbotin, Yann. 2013. “Parametric Estimation of Sparse Channels: Theory and 
+Applications.” PhD thesis, EPFL – School of Information; Communications.</p>
+
+<p>Brent, RP, FT Luk, and C. Van Loan. 1985. “Computation of the Singular Value
+Decomposition Using Mesh-connected Processors.” <em>Journal of VLSI and Computer
+Systems</em> 1 (3): 242–270.</p>
+
+<p>Pan, Victor. 2001. <em>Structured Matrices and Polynomials: Unified Superfast
+Algorithms</em>. Springer Verlag.</p>
+
+<p>Roy, R., and T. Kailath. 1989. “ESPRIT-Estimation of Signal Parameters Via 
+Rotational Invariance Techniques.” <em>IEEE Trans. Acoust., Speech, Signal
+Process.</em> 37: 984–995.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">KrylovFRITools maintained by <a href="https://github.com/LCAV">LCAV</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
