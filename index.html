@@ -1,38 +1,33 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-
   <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="KrylovFRITools : We present proof of concept code - MATLAB and Python - for identification of the union of subspaces in FRI estimation problems when the number of measurements greatly exceeds the dimension of the model." />
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>KrylovFRITools by LCAV</title>
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>KrylovFRITools</title>
-    
-    <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
   </head>
-
   <body>
+    <div class="wrapper">
+      <header>
+        <h1>KrylovFRITools</h1>
+        <p>We present proof of concept code - MATLAB and Python - for identification of the union of subspaces in FRI estimation problems when the number of measurements greatly exceeds the dimension of the model.</p>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/LCAV/KrylovFRITools">View on GitHub</a>
+        <p class="view"><a href="https://github.com/LCAV/KrylovFRITools">View the Project on GitHub <small>LCAV/KrylovFRITools</small></a></p>
 
-          <h1 id="project_title">KrylovFRITools</h1>
-          <h2 id="project_tagline">We present proof of concept code - MATLAB and Python - for identification of the union of subspaces in FRI estimation problems when the number of measurements greatly exceeds the dimension of the model.</h2>
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/LCAV/KrylovFRITools/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/LCAV/KrylovFRITools/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
+        <ul>
+          <li><a href="https://github.com/LCAV/KrylovFRITools/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/LCAV/KrylovFRITools/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/LCAV/KrylovFRITools">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
         <h1>
 <a name="preamble" class="anchor" href="#preamble"><span class="octicon octicon-link"></span></a>Preamble</h1>
 
@@ -46,20 +41,20 @@ a linear memory consumption in term of the input size.*</p>
 <h2>
 <a name="formulation-of-the-problem" class="anchor" href="#formulation-of-the-problem"><span class="octicon octicon-link"></span></a>Formulation of the problem</h2>
 
-<p>We consider a set of  $P$ sequences of measurements</p>
+<p>We consider a set of  \(P\) sequences of measurements</p>
 
 <p>\[Y_p[m] = \sum_{k=1}^K c_{k,p}e^{-jD\omega_k m}+E[m]\ ,\quad\ |m|\leq M, \quad p=1,\ \dots, \ P,\]</p>
 
 <p>where </p>
 
 <ul>
-<li>$K$ is the number of subspaces in the union of subspaces,</li>
-<li>$D$ is an integer decimation factor ($D= 1,\ 2,\ 3,\ \dots$),</li>
-<li>$\omega_k$ are unknown phases within $[-\pi/D ,\  \pi/D[$,</li>
-<li>$c_{k,p}$ are unknown complex-valued scalars,</li>
-<li>$E$ is a sequence of white gaussian noise.</li>
-</ul><p>Therefore, the input is of size $P(2M+1)$. The problem we consider is the fast
-and accurate estimation of the unknown phases $\omega_k$ from the measurements.</p>
+<li>\(K\) is the number of subspaces in the union of subspaces,</li>
+<li>\(D\) is an integer decimation factor (\(D= 1,\ 2,\ 3,\ \dots\)),</li>
+<li>\(\omega_k\) are unknown phases within \([-\pi/D ,\  \pi/D[\),</li>
+<li>\(c_{k,p}\) are unknown complex-valued scalars,</li>
+<li>\(E\) is a sequence of white gaussian noise.</li>
+</ul><p>Therefore, the input is of size \(P(2M+1)\). The problem we consider is the fast
+and accurate estimation of the unknown phases \(\omega_k\) from the measurements.</p>
 
 <h2>
 <a name="theoretical-guarantees-of-the-proposed-solution" class="anchor" href="#theoretical-guarantees-of-the-proposed-solution"><span class="octicon octicon-link"></span></a>Theoretical guarantees of the proposed solution</h2>
@@ -77,48 +72,48 @@ and accurate estimation of the unknown phases $\omega_k$ from the measurements.<
 <tbody>
 <tr>
 <td>Krylov</td>
-<td>$KPM\log M$</td>
-<td>$KM$</td>
-<td>$KM$</td>
-<td>$P:\times$ FFT engines ($2(M+1)$ points FFT)</td>
+<td>\(KPM\log M\)</td>
+<td>\(KM\)</td>
+<td>\(KM\)</td>
+<td>\(P:\times\) FFT engines (\(2(M+1)\) points FFT)</td>
 </tr>
 <tr>
 <td>Full SVD (serial)</td>
-<td>$PM^{3}$</td>
-<td>$PM^{2}$</td>
-<td>$PM^{3}$</td>
+<td>\(PM^{3}\)</td>
+<td>\(PM^{2}\)</td>
+<td>\(PM^{3}\)</td>
 <td>1 SVD multipurpose processor</td>
 </tr>
 <tr>
 <td>Full SVD (systolic array)</td>
-<td>$PM^{3}$</td>
-<td>$PM^{2}$</td>
-<td>$M(\log M +P)$</td>
-<td>$M^{2}\times:$ 2-by-2  SVD pu.</td>
+<td>\(PM^{3}\)</td>
+<td>\(PM^{2}\)</td>
+<td>\(M(\log M +P)\)</td>
+<td>\(M^{2}\times:\) 2-by-2  SVD pu.</td>
 </tr>
 </tbody>
 </table><p>: The full SVD is done with Jacobi rotations and can be massively parallelized
 using the systolic array method [@Brent1985]. Parallelism greatly reduces the
 latency of the system, but since it does not reduce the number of computations
 it comes at the cost of using multiple processing units. The numbers are to be
-understood in "$\mathcal{O}$" notation.</p>
+understood in "\(\mathcal{O}\)" notation.</p>
 
 <p>The storage improvement comes from the fact that <em>the data matrix used within
 the ESPRIT algorithm is never explicitely built</em>.  The computational
 improvement is guaranteed by [@Barbotin2013, Theorem 2.3], where it is proven
 that the sine squared of the principal angle between the signal space -- The
-signal space is the union of subspaces referred above -- of dimension $K$ and
-its approximation found in a Krylov subspace of dimension $L&gt;K$ evolves as</p>
+signal space is the union of subspaces referred above -- of dimension \(K\) and
+its approximation found in a Krylov subspace of dimension \(L&gt;K\) evolves as</p>
 
-<p>$$\mathcal O\left(\left(\frac{\log M}{\sqrt{M}}\right)^{2(L-K)}\right).$$</p>
+<p>\[\mathcal O\left(\left(\frac{\log M}{\sqrt{M}}\right)^{2(L-K)}\right).\]</p>
 
 <p>(For a small angle, the first order Taylor approximation of the sine function
-indicates that the principal angle is of magnitude $\mathcal O\left(\left(\frac{\log M}{\sqrt{M}}\right)^{(L-K)}\right).$)</p>
+indicates that the principal angle is of magnitude \(\mathcal O\left(\left(\frac{\log M}{\sqrt{M}}\right)^{(L-K)}\right).\))</p>
 
 <p>It indicates that the approximation error decays as a power degree
 corresponding to the number of additional dimensions compared to the signal
-subspace, so that a low enough numerical error is met for $L\sim\mathcal O(K)$
-and $M$ large enough.</p>
+subspace, so that a low enough numerical error is met for \(L\sim\mathcal O(K)\)
+and \(M\) large enough.</p>
 
 <h1>
 <a name="code-snippets" class="anchor" href="#code-snippets"><span class="octicon octicon-link"></span></a>Code snippets</h1>
@@ -129,10 +124,10 @@ and $M$ large enough.</p>
 <p>Keep in mind that:</p>
 
 <ul>
-<li>We provide a MATLAB and a Python code The Python code implements only the single input case, <em>ie.</em> $P=1$.</li>
-<li>Since the measurements are indexed by $|m|\leq M$ it assumes that they are in an odd number. This is not a requirement <em>per se</em>, and the code can easily be tweaked to deal with it. </li>
-<li>Both codes output  the phasor $z_k=e^{jD\omega_k}$. The original phase is retrieved without ambiguity by a simple division of the phase by $D$ assuming it belongs to $[-\pi/D ,\  \pi/D[$.</li>
-<li>This is a basic code, it does not include the estimation of the signal space dimension nor the estimation of the coefficients $c_{k,p}$ -- the later is quite straightforward and can be done efficiently using rational interpolation [@Pan2001].</li>
+<li>We provide a MATLAB and a Python code The Python code implements only the single input case, <em>ie.</em> \(P=1\).</li>
+<li>Since the measurements are indexed by \(|m|\leq M\) it assumes that they are in an odd number. This is not a requirement <em>per se</em>, and the code can easily be tweaked to deal with it. </li>
+<li>Both codes output  the phasor \(z_k=e^{jD\omega_k}\). The original phase is retrieved without ambiguity by a simple division of the phase by \(D\) assuming it belongs to \([-\pi/D ,\  \pi/D[\).</li>
+<li>This is a basic code, it does not include the estimation of the signal space dimension nor the estimation of the coefficients \(c_{k,p}\) -- the later is quite straightforward and can be done efficiently using rational interpolation [@Pan2001].</li>
 </ul><h2>
 <a name="matlab-code" class="anchor" href="#matlab-code"><span class="octicon octicon-link"></span></a>MATLAB code</h2>
 
@@ -222,8 +217,8 @@ structure <code>opts</code>. Change them to suit your needs.</p>
 <span class="k">end</span>
 </pre></div>
 
-<p>During the Krylov subspace projection the block-Toeplitz data matrix $\mathbf
-T$ is only accessed through matrix vector multiplications, therefore it does
+<p>During the Krylov subspace projection the block-Toeplitz data matrix \(\mathbf
+T\( is only accessed through matrix vector multiplications, therefore it does
 not have to be built explicitely, rather we coded the function <code>mmult</code> which
 uses the FFT to perform the matrix-vector multiplication.</p>
 
@@ -260,7 +255,7 @@ uses the FFT to perform the matrix-vector multiplication.</p>
 <h2>
 <a name="python-code" class="anchor" href="#python-code"><span class="octicon octicon-link"></span></a>Python code</h2>
 
-<p>Below is a simple Python class for a single input ($P=1$). Extension to multiple inputs is relatively easy, follow the MATLAB code.</p>
+<p>Below is a simple Python class for a single input (\(P=1\)). Extension to multiple inputs is relatively easy, follow the MATLAB code.</p>
 
 <div class="highlight highlight-python"><pre><span class="c"># This class stores a Toeplitz matrix implicitly (generator) and provide fast methods to evaluate its column-space</span>
 <span class="c"># and the roots of its generator</span>
@@ -304,9 +299,9 @@ uses the FFT to perform the matrix-vector multiplication.</p>
 
 <p>For more details, see the <a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.LinearOperator.html#scipy.sparse.linalg.LinearOperator">documentation on the <code>LinearOperator</code> object</a>.</p>
 
-<p>As a quick check, the fast implementation quickly outperforms the direct implementation as $M$ grows :</p>
+<p>As a quick check, the fast implementation quickly outperforms the direct implementation as \(M\) grows :</p>
 
-<p><img src="./benchmark.png" alt="Median runtime of ESPRIT-TLS ($K = 5$, $P = 1$) on a single channel for a given number of pilots $2M + 1$. The test is coded in Python and uses the LAPACK library to compute SVDs and the ARPACK library for the Lanczos iterations. The fast matrix-vector multiplication uses the FFTW3 library." title="benchmark"></p>
+<p><img src="./benchmark.png" alt="Median runtime of ESPRIT-TLS (\\(K = 5\\), \\(P = 1\\)) on a single channel for a given number of pilots \\(2M + 1\\). The test is coded in Python and uses the LAPACK library to compute SVDs and the ARPACK library for the Lanczos iterations. The fast matrix-vector multiplication uses the FFTW3 library." title="benchmark"></p>
 
 <h1>
 <a name="bibliography" class="anchor" href="#bibliography"><span class="octicon octicon-link"></span></a>Bibliography</h1>
@@ -325,17 +320,12 @@ Algorithms</em>. Springer Verlag.</p>
 Rotational Invariance Techniques.” <em>IEEE Trans. Acoust., Speech, Signal
 Process.</em> 37: 984–995.</p>
       </section>
-    </div>
-
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">KrylovFRITools maintained by <a href="https://github.com/LCAV">LCAV</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/LCAV">LCAV</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
       </footer>
     </div>
-
+    <script src="javascripts/scale.fix.js"></script>
     
-
   </body>
 </html>
