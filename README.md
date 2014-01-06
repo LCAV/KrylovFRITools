@@ -13,7 +13,7 @@ a linear memory consumption in term of the input size.*
 
 We consider a set of  $P$ sequences of measurements
 
-$$Y_p[m] = \sum_{k=1}^K c_{k,p}e^{-jD\omega_k m}+E[m]\ ,\quad\ |m|\leq M, \quad p=1,\ \dots, \ P,$$
+\\[Y_p[m] = \sum_{k=1}^K c_{k,p}e^{-jD\omega_k m}+E[m]\ ,\quad\ |m|\leq M, \quad p=1,\ \dots, \ P,\\]
 
 where 
 
