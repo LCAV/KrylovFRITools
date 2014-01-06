@@ -66,18 +66,19 @@ and $M$ large enough.
 ## Foreword
 Keep in mind that:
 
-- We provide a MATLAB and a Python^[The Python code implements only the single input case, *ie.* $P=1$.] code. 
+- We provide a MATLAB and a Python code The Python code implements only the single input case, *ie.* $P=1$.
 - Since the measurements are indexed by $|m|\leq M$ it assumes that they are in an odd number. This is not a requirement *per se*, and the code can easily be tweaked to deal with it. 
 - Both codes output  the phasor $z_k=e^{jD\omega_k}$. The original phase is retrieved without ambiguity by a simple division of the phase by $D$ assuming it belongs to $[-\pi/D ,\  \pi/D[$.
 - This is a basic code, it does not include the estimation of the signal space dimension nor the estimation of the coefficients $c_{k,p}$ -- the later is quite straightforward and can be done efficiently using rational interpolation [@Pan2001].
 
 ## MATLAB code
 
-First, we provide a simple implementation of the ESPRIT algorithm^[See [@Roy1989] for the original ESPRIT algorithm, and [@Barbotin2013, Chapter 2] for more details on this particular usage.] using a *least-squares* (LS) or *total least-squares* (TLS) error metric and using either (see the Table above) : 
+First, we provide a simple implementation of the ESPRIT algorithm using a *least-squares* (LS) or *total least-squares* (TLS) error metric and using either (see the Table above) : 
 
 1. The "Full SVD (serial)" method.
 2. The "Krylov" method.
 
+See [@Roy1989] for the original ESPRIT algorithm, and [@Barbotin2013, Chapter 2] for more details on this particular usage.
   
 ```matlab
 function z=ESPRIT(Y,K,krylov,TLS)
@@ -110,9 +111,9 @@ end
 
 The two functions ``sigspace_toeplitz_Krylov`` and ``sigspace_toeplitz`` are yet to be defined.
 
-First the Krylov based method^[Some parameters like the tolerance, the number
+First the Krylov based method. Some parameters like the tolerance, the number
 of lanczos vectors, ... are usually fixed and therefore hard-coded -- see the
-structure ``opts``. Change them to suit your needs.]
+structure ``opts``. Change them to suit your needs.
 
 ```matlab
 function [V D termsig]=sigspace_toeplitz_Krylov(Y,K,v0)
@@ -198,7 +199,7 @@ end
 
 ## Python code
 
-Below is a simple Python class for a single input^[Extension to multiple inputs is relatively easy, follow the MATLAB code.] ($P=1$)
+Below is a simple Python class for a single input ($P=1$). Extension to multiple inputs is relatively easy, follow the MATLAB code.
 
 ```python
 # This class stores a Toeplitz matrix implicitly (generator) and provide fast methods to evaluate its column-space
