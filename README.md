@@ -11,20 +11,20 @@ a linear memory consumption in term of the input size.*
 
 ## Formulation of the problem
 
-We consider a set of  $P$ sequences of measurements
+We consider a set of  \\(P\\) sequences of measurements
 
-`$$Y_p[m] = \sum_{k=1}^K c_{k,p}e^{-jD\omega_k m}+E[m]\ ,\quad\ |m|\leq M, \quad p=1,\ \dots, \ P,$$`
+\\[Y_p[m] = \sum_{k=1}^K c_{k,p}e^{-jD\omega_k m}+E[m]\ ,\quad\ |m|\leq M, \quad p=1,\ \dots, \ P,\\]
 
 where 
 
-- $K$ is the number of subspaces in the union of subspaces,
-- $D$ is an integer decimation factor ($D= 1,\ 2,\ 3,\ \dots$),
-- $\omega_k$ are unknown phases within $[-\pi/D ,\  \pi/D[$,
-- $c_{k,p}$ are unknown complex-valued scalars,
-- $E$ is a sequence of white gaussian noise.
+- \\(K\\) is the number of subspaces in the union of subspaces,
+- \\(D\\) is an integer decimation factor (\\(D= 1,\ 2,\ 3,\ \dots\\)),
+- \\(\omega_k\\) are unknown phases within \\([-\pi/D ,\  \pi/D[\\),
+- \\(c_{k,p}\\) are unknown complex-valued scalars,
+- \\(E\\) is a sequence of white gaussian noise.
 
-Therefore, the input is of size $P(2M+1)$. The problem we consider is the fast
-and accurate estimation of the unknown phases $\omega_k$ from the measurements.
+Therefore, the input is of size \\(P(2M+1)\\). The problem we consider is the fast
+and accurate estimation of the unknown phases \\(\omega_k\\) from the measurements.
 
 
 ## Theoretical guarantees of the proposed solution
@@ -33,43 +33,43 @@ The properties of our solution can be summarized and compared with other methods
 
 |Algorithm| Main computation |Storage | Latency | Processing units (pu.) |
 |---------|------------------|--------|---------|------------------------|
-|Krylov   | $KPM\log M$    | $KM$ | $KM$  | $P\:\times$ FFT engines ($2(M+1)$ points FFT)|
-|Full SVD (serial)|  $PM^{3}$ | $PM^{2}$ | $PM^{3}$ | 1 SVD multipurpose processor |
-|Full SVD (systolic array) | $PM^{3}$ | $PM^{2}$ | $M(\log M +P)$ | $M^{2}\times\:$ 2-by-2  SVD pu. |
+|Krylov   | \\(KPM\log M\\)    | \\(KM\\) | \\(KM\\)  | \\(P\:\times\\) FFT engines (\\(2(M+1)\\) points FFT)|
+|Full SVD (serial)|  \\(PM^{3}\\) | \\(PM^{2}\\) | \\(PM^{3}\\) | 1 SVD multipurpose processor |
+|Full SVD (systolic array) | \\(PM^{3}\\) | \\(PM^{2}\\) | \\(M(\log M +P)\\) | \\(M^{2}\times\:\\) 2-by-2  SVD pu. |
 
 : The full SVD is done with Jacobi rotations and can be massively parallelized
 using the systolic array method [@Brent1985]. Parallelism greatly reduces the
 latency of the system, but since it does not reduce the number of computations
 it comes at the cost of using multiple processing units. The numbers are to be
-understood in "$\mathcal{O}$" notation.
+understood in "\\(\mathcal{O}\\)" notation.
 
 
 The storage improvement comes from the fact that *the data matrix used within
 the ESPRIT algorithm is never explicitely built*.  The computational
 improvement is guaranteed by [@Barbotin2013, Theorem 2.3], where it is proven
 that the sine squared of the principal angle between the signal space -- The
-signal space is the union of subspaces referred above -- of dimension $K$ and
-its approximation found in a Krylov subspace of dimension $L>K$ evolves as
+signal space is the union of subspaces referred above -- of dimension \\(K\\) and
+its approximation found in a Krylov subspace of dimension \\(L>K\\) evolves as
 
-$$\mathcal O\left(\left(\frac{\log M}{\sqrt{M}}\right)^{2(L-K)}\right).$$
+\\[\mathcal O\left(\left(\frac{\log M}{\sqrt{M}}\right)^{2(L-K)}\right).\\]
 
 (For a small angle, the first order Taylor approximation of the sine function
-indicates that the principal angle is of magnitude $\mathcal O\left(\left(\frac{\log M}{\sqrt{M}}\right)^{(L-K)}\right).$)
+indicates that the principal angle is of magnitude \\(\mathcal O\left(\left(\frac{\log M}{\sqrt{M}}\right)^{(L-K)}\right).\\))
 
 It indicates that the approximation error decays as a power degree
 corresponding to the number of additional dimensions compared to the signal
-subspace, so that a low enough numerical error is met for $L\sim\mathcal O(K)$
-and $M$ large enough.
+subspace, so that a low enough numerical error is met for \\(L\sim\mathcal O(K)\\)
+and \\(M\\) large enough.
 
 # Code snippets
 
 ## Foreword
 Keep in mind that:
 
-- We provide a MATLAB and a Python code The Python code implements only the single input case, *ie.* $P=1$.
-- Since the measurements are indexed by $|m|\leq M$ it assumes that they are in an odd number. This is not a requirement *per se*, and the code can easily be tweaked to deal with it. 
-- Both codes output  the phasor $z_k=e^{jD\omega_k}$. The original phase is retrieved without ambiguity by a simple division of the phase by $D$ assuming it belongs to $[-\pi/D ,\  \pi/D[$.
-- This is a basic code, it does not include the estimation of the signal space dimension nor the estimation of the coefficients $c_{k,p}$ -- the later is quite straightforward and can be done efficiently using rational interpolation [@Pan2001].
+- We provide a MATLAB and a Python code The Python code implements only the single input case, *ie.* \\(P=1\\).
+- Since the measurements are indexed by \\(|m|\leq M\\) it assumes that they are in an odd number. This is not a requirement *per se*, and the code can easily be tweaked to deal with it. 
+- Both codes output  the phasor \\(z_k=e^{jD\omega_k}\\). The original phase is retrieved without ambiguity by a simple division of the phase by \\(D\\) assuming it belongs to \\([-\pi/D ,\  \pi/D[\\).
+- This is a basic code, it does not include the estimation of the signal space dimension nor the estimation of the coefficients \\(c_{k,p}\\) -- the later is quite straightforward and can be done efficiently using rational interpolation [@Pan2001].
 
 ## MATLAB code
 
@@ -161,8 +161,8 @@ function [V D termsig]=sigspace_toeplitz_Krylov(Y,K,v0)
 end
 ```
 
-During the Krylov subspace projection the block-Toeplitz data matrix $\mathbf
-T$ is only accessed through matrix vector multiplications, therefore it does
+During the Krylov subspace projection the block-Toeplitz data matrix \\(\mathbf
+T\\( is only accessed through matrix vector multiplications, therefore it does
 not have to be built explicitely, rather we coded the function ``mmult`` which
 uses the FFT to perform the matrix-vector multiplication.
 
@@ -199,7 +199,7 @@ end
 
 ## Python code
 
-Below is a simple Python class for a single input ($P=1$). Extension to multiple inputs is relatively easy, follow the MATLAB code.
+Below is a simple Python class for a single input (\\(P=1\\)). Extension to multiple inputs is relatively easy, follow the MATLAB code.
 
 ```python
 # This class stores a Toeplitz matrix implicitly (generator) and provide fast methods to evaluate its column-space
@@ -244,9 +244,9 @@ class toeplitzgen:
 
 For more details, see the [documentation on the ``LinearOperator`` object](http://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.LinearOperator.html#scipy.sparse.linalg.LinearOperator).
 
-As a quick check, the fast implementation quickly outperforms the direct implementation as $M$ grows :
+As a quick check, the fast implementation quickly outperforms the direct implementation as \\(M\\) grows :
 
-![Median runtime of ESPRIT-TLS ($K = 5$, $P = 1$) on a single channel for a given number of pilots $2M + 1$. The test is coded in Python and uses the LAPACK library to compute SVDs and the ARPACK library for the Lanczos iterations. The fast matrix-vector multiplication uses the FFTW3 library.](./benchmark.png "benchmark")
+![Median runtime of ESPRIT-TLS (\\(K = 5\\), \\(P = 1\\)) on a single channel for a given number of pilots \\(2M + 1\\). The test is coded in Python and uses the LAPACK library to compute SVDs and the ARPACK library for the Lanczos iterations. The fast matrix-vector multiplication uses the FFTW3 library.](./benchmark.png "benchmark")
 
 # Bibliography
 
