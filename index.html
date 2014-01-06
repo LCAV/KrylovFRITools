@@ -11,7 +11,6 @@
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
   </head>
   <body>
     <div class="wrapper">
@@ -35,9 +34,9 @@
 <p><strong>Abstract</strong> --- <em>We present proof of concept code -- MATLAB and Python -- for
 identification of the union of subspaces in FRI estimation problems when the
 number of measurements greatly exceeds the dimension of the model. This
-scenario happens frequently in wireless communications, *eg.</em> OFDM channels
+scenario happens frequently in wireless communications,</em> eg. <em>OFDM channels
 estimation from pilots. The key properties are a superlinear running-time and
-a linear memory consumption in term of the input size.*</p>
+a linear memory consumption in term of the input size.</em></p>
 
 <h2>
 <a name="formulation-of-the-problem" class="anchor" href="#formulation-of-the-problem"><span class="octicon octicon-link"></span></a>Formulation of the problem</h2>
@@ -76,7 +75,7 @@ and accurate estimation of the unknown phases \(\omega_k\) from the measurements
 <td>\(KPM\log M\)</td>
 <td>\(KM\)</td>
 <td>\(KM\)</td>
-<td>\(P:\times\) FFT engines (\(2(M+1)\) points FFT)</td>
+<td>\(P\:\times\) FFT engines (\(2(M+1)\) points FFT)</td>
 </tr>
 <tr>
 <td>Full SVD (serial)</td>
@@ -90,18 +89,18 @@ and accurate estimation of the unknown phases \(\omega_k\) from the measurements
 <td>\(PM^{3}\)</td>
 <td>\(PM^{2}\)</td>
 <td>\(M(\log M +P)\)</td>
-<td>\(M^{2}\times:\) 2-by-2  SVD pu.</td>
+<td>\(M^{2}\times\:\) 2-by-2  SVD pu.</td>
 </tr>
 </tbody>
-</table><p>: The full SVD is done with Jacobi rotations and can be massively parallelized
-using the systolic array method [@Brent1985]. Parallelism greatly reduces the
+</table><p>The full SVD is done with Jacobi rotations and can be massively parallelized
+using the systolic array method [Brent1985]. Parallelism greatly reduces the
 latency of the system, but since it does not reduce the number of computations
 it comes at the cost of using multiple processing units. The numbers are to be
 understood in "\(\mathcal{O}\)" notation.</p>
 
 <p>The storage improvement comes from the fact that <em>the data matrix used within
 the ESPRIT algorithm is never explicitely built</em>.  The computational
-improvement is guaranteed by [@Barbotin2013, Theorem 2.3], where it is proven
+improvement is guaranteed by [Barbotin2013, Theorem 2.3], where it is proven
 that the sine squared of the principal angle between the signal space -- The
 signal space is the union of subspaces referred above -- of dimension \(K\) and
 its approximation found in a Krylov subspace of dimension \(L&gt;K\) evolves as</p>
@@ -128,7 +127,7 @@ and \(M\) large enough.</p>
 <li>We provide a MATLAB and a Python code The Python code implements only the single input case, <em>ie.</em> \(P=1\).</li>
 <li>Since the measurements are indexed by \(|m|\leq M\) it assumes that they are in an odd number. This is not a requirement <em>per se</em>, and the code can easily be tweaked to deal with it. </li>
 <li>Both codes output  the phasor \(z_k=e^{jD\omega_k}\). The original phase is retrieved without ambiguity by a simple division of the phase by \(D\) assuming it belongs to \([-\pi/D ,\  \pi/D[\).</li>
-<li>This is a basic code, it does not include the estimation of the signal space dimension nor the estimation of the coefficients \(c_{k,p}\) -- the later is quite straightforward and can be done efficiently using rational interpolation [@Pan2001].</li>
+<li>This is a basic code, it does not include the estimation of the signal space dimension nor the estimation of the coefficients \(c_{k,p}\) -- the later is quite straightforward and can be done efficiently using rational interpolation [Pan2001].</li>
 </ul><h2>
 <a name="matlab-code" class="anchor" href="#matlab-code"><span class="octicon octicon-link"></span></a>MATLAB code</h2>
 
@@ -137,7 +136,7 @@ and \(M\) large enough.</p>
 <ol>
 <li>The "Full SVD (serial)" method.</li>
 <li>The "Krylov" method.</li>
-</ol><p>See [<a href="https://github.com/Roy1989" class="user-mention">@Roy1989</a>] for the original ESPRIT algorithm, and [@Barbotin2013, Chapter 2] for more details on this particular usage.</p>
+</ol><p>See [Roy1989] for the original ESPRIT algorithm, and [Barbotin2013, Chapter 2] for more details on this particular usage.</p>
 
 <div class="highlight highlight-matlab"><pre><span class="k">function</span><span class="w"> </span>z<span class="p">=</span><span class="nf">ESPRIT</span><span class="p">(</span>Y,K,krylov,TLS<span class="p">)</span><span class="w"></span>
 
